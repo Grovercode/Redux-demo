@@ -1,0 +1,1 @@
+import {IMAGES} from '../../actionTypes'

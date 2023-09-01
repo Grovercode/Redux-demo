@@ -1,6 +1,6 @@
 import {
   ADD_TODO,
-  FORM_ENTRY,
+  IMAGES,
   GET_USERS_FETCH,
   SET_FILTER,
   TOGGLE_TODO,
@@ -38,3 +38,19 @@ export const setFilter = (filter: any) => {
 export const getUsersFetch = () => ({
   type: GET_USERS_FETCH,
 });
+
+export const loadImages = () => (
+  {
+    type: IMAGES.LOAD,
+  }
+)
+
+export const setImages = (images : any)=> ({
+  type: IMAGES.LOAD_SUCCESS, 
+  images
+})
+
+export const setError = (error : any) => ({
+  type: IMAGES.LOAD_FAIL,
+  error,
+})

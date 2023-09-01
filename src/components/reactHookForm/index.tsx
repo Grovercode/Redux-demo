@@ -2,6 +2,7 @@ import { Button, Heading } from "@chakra-ui/react";
 import styled from "@emotion/styled";
 import { Input } from "@chakra-ui/react";
 import { useForm, useFieldArray } from "react-hook-form";
+import { useEffect } from "react";
 
 const indianPhoneNumberRegex = /^[789]\d{9}$/;
 
@@ -13,15 +14,19 @@ type FormValues = {
     number: string;
   }[];
 };
-
+interface InputContainerProps {
+  isInvalid?: boolean;
+}
 const Wrapper = styled.div`
   margin-top: 50px;
 `;
-const InputContainer = styled.div`
+
+
+const InputContainer = styled.div<InputContainerProps>`
   display: flex;
-  margin: 10px 0px;
+  margin: ${(props) => (props.isInvalid ? '0' : '10px 0')};
   width: 100%;
-  justify-content: end;
+  justify-content: flex-end;
 `;
 
 const ErrorText = styled.div`
@@ -31,22 +36,40 @@ const ErrorText = styled.div`
 const ReactHookForm = () => {
   const form = useForm<FormValues>({
     defaultValues: {
-      username: "",
+      username: "Default value",
       phNumbers: [{ number: "" }],
     },
+    mode: "onBlur"
   });
-  const { register, handleSubmit, formState, control } = form; // extract handleSubmit from form
-  const { errors } = formState;
+  const { register, handleSubmit, formState, control , watch, getValues, setValue, reset} = form; // extract handleSubmit from form
+  const { errors, isSubmitSuccessful } = formState;
 
   const { fields, append, remove } = useFieldArray({
     name: "phNumbers",
     control,
   });
 
+  useEffect(()=>{
+    if(isSubmitSuccessful)
+    {
+      reset()
+    }
+  }, [isSubmitSuccessful, reset])
+
   const onSubmit = (data: FormValues) => {
     console.log("Form submitted with data = ", data);
   };
 
+  console.log("errors = ",errors)
+  console.log("Form state = ",formState)
+
+  const handleSetValues = () => {
+    setValue("username", "", {
+      shouldDirty:true,
+      shouldValidate: true,
+      shouldTouch: true
+    })
+  }
   return (
     <Wrapper>
       <Heading my="4">React Hook Form handling</Heading>
@@ -74,6 +97,7 @@ const ReactHookForm = () => {
             type="text"
             {...register("channel", {
               required: "Channel is required",
+              disabled : watch("username") === ''
             })}
           />
           {errors?.channel && (
@@ -88,6 +112,7 @@ const ReactHookForm = () => {
             isInvalid={!!errors?.email}
             type="text"
             {...register("email", {
+              disabled : watch("channel") === '',
               required: "Email is required",
               pattern: {
                 value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
@@ -117,14 +142,21 @@ const ReactHookForm = () => {
         <div style={{ fontWeight: 700 }}>List of phone numbers</div>
         <div>
           {fields?.map((field, index) => {
+             const numberErrorMessage = errors?.phNumbers?.[index]?.number?.message; // Get the error message
+             const isNumberInvalid = !!numberErrorMessage; // Convert error message to a boolean
+         
             return (
               <div key={field.id}>
-                <InputContainer>
+                <InputContainer isInvalid = {isNumberInvalid}>
                   <Input
                     style={{ width: "100%" }}
+                    isInvalid = {isNumberInvalid}
                     {...register(`phNumbers.${index}.number` as const, {
                       required: "Phone number cannot be empty",
-                      validate: 
+                      pattern: {
+                        value: indianPhoneNumberRegex,
+                        message: "Invalid phone number",
+                      },
                     })}
                     type="text"
                   />
@@ -134,21 +166,34 @@ const ReactHookForm = () => {
                     </Button>
                   )}
                 </InputContainer>
+                {isNumberInvalid && (
+            <ErrorText className="error">{numberErrorMessage}</ErrorText>
+          )}
               </div>
             );
           })}
         </div>
         <Button
-          style={{ width: "100%", marginBottom: "10px" }}
+          style={{ width: "100%", margin: "10px 0px" }}
           type="button"
           onClick={() => append({ number: "" })}
         >
           Add Member
         </Button>
 
+        <Button style={{ width: "100%", marginBottom: "10px" }} onClick={handleSetValues}>
+          Set username empty
+        </Button>
+
+        <Button style={{ width: "100%", marginBottom: "10px" }} onClick={()=> reset()}>
+          Reset form
+        </Button>
+
         <Button style={{ width: "100%" }} type="submit">
           Submit
         </Button>
+
+        
       </form>
     </Wrapper>
   );

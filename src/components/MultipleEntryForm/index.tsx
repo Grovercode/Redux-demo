@@ -30,16 +30,16 @@ class MyForm extends React.Component {
 
   renderMembers = ({ fields }: any) => {
     return (
-      <ul>
+      <div>
         {fields.map((member: any, index: any) => (
-          <li key={index}>
-            <InputContainer>
+          
+            <InputContainer  key={index}>
               <Field name={member} component={this.renderField} />
               <Button type="button" onClick={() => fields.remove(index)}>
                 Remove
               </Button>
             </InputContainer>
-          </li>
+          
         ))}
 
         <Button
@@ -49,7 +49,7 @@ class MyForm extends React.Component {
         >
           Add Member
         </Button>
-      </ul>
+      </div>
     );
   };
 
